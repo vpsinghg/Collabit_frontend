@@ -36,3 +36,26 @@
     transform: rotate(360deg);
   }
 }
+
+.sidenav {
+  padding-top: 20px;
+  min-height: 100vh;
+  text-align: center;
+  background-color: rgb(235,235,235);
+  margin-left: 0;
+}
+
+.sidenav .sidenav-heading{
+  padding: 0.875rem 1.25rem;
+  color :rgb(27,31,34);
+  font: 1.2rem;
+}
+
+.sidenav .list-group{
+  padding: 10px;
+}
+
+.sidenav .list-item{
+  padding: 10px;
+  border-bottom: solid 1px rgb(209,209,209);
+}
