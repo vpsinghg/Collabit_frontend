@@ -2,13 +2,14 @@ import { useState,useEffect } from 'react';
 import Table from 'react-bootstrap/Table';
 import axios from 'axios';
 
-import { Row,Col,Card } from 'react-bootstrap';
+import { Row,Col,Card ,Form,Button} from 'react-bootstrap';
 import { errorMessage } from '../../utils/errResponse';
 export const UserTable = (props)=>{
     const [users, setUsers] = useState([]);
     const [namefilter, Setnamefilter] =   useState('');
     const [emailfilter, Setemailfilter] =   useState('');
-    const [rolefilter, Setrolefilter] =   useState('');
+    const [rolefilter, Setrolefilter] =   useState('all');
+    const [verifiedfilter,Setverifiedfilter] =  useState('allusers')
     const [createdByfilter, SetcreatedByfilter] =   useState('');
     const [errResponse, SeterrResponse] =useState("");
     const [successResponse, SetsuccessResponse] =useState("");
@@ -21,9 +22,10 @@ export const UserTable = (props)=>{
             name    :   namefilter,
             email   :   emailfilter,
             role    :   rolefilter,
-            createdBy   :parseInt(createdByfilter)
+            createdBy   :parseInt(createdByfilter),
+            verified : verifiedfilter
         }
-
+        console.log(data);
         const config    ={
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             params :data
@@ -32,7 +34,6 @@ export const UserTable = (props)=>{
             .get(targeturl,config)
             .then((Response)=>{
                 setUsers(Response.data.users);
-                Setdatafetch(false);
             })
             .catch((err)=>{
                 console.log(err);
@@ -40,7 +41,7 @@ export const UserTable = (props)=>{
         
     },[datafectch]);
     const handlechange    =(e)=>{
-        
+        console.log(e.target.name);
         switch(e.target.name){
             case 'namefilter':{
                 Setnamefilter(e.target.value);
@@ -58,11 +59,15 @@ export const UserTable = (props)=>{
                 SetcreatedByfilter(e.target.value);
                 break;
             }
+            case 'verifieduser' :   {
+                Setverifiedfilter(e.target.id);
+                break;
+            }
             default:{
                 break;
             }
         }
-        Setdatafetch(true);
+        Setdatafetch(!datafectch);
     }
 
     const deleteUser =(id)    =>{
@@ -98,31 +103,82 @@ export const UserTable = (props)=>{
     }
 
     const container_style={
-        maxWidth:"80%",
+        maxWidth:"90%",
+        backgroundColor:"white",
+        borderRadius    :   "10px",
+        boxShadow   :   "0px 0px 10px -2px rgba(0,0,0,0.55)",
+        padding : "2rem",
+        marginTop:'2rem'
     }
 
     return(
-        <div className="container"  style={container_style}
+        <div className="container"  
+            style={container_style}
         >
-            <h1>User listing</h1>
-            <Card style={{display:'flex',flexDirection:"row",justifyContent:"space-around"}}>
-                <Row>
-                    <Col>
-                    <input type="text" placeholder="filter with name" onChange={handlechange} value={namefilter} name="namefilter"></input>
-                    </Col>
-                    <Col>
-                    <input type="text" placeholder="filter with email" onChange={handlechange} value={emailfilter} name="emailfilter"></input>
-                    </Col>
+            <h1>Users</h1>
+            <Form>
+                <Row className="mb-3">
+                    <Form.Group as={Col} controlId="NameFilter">
+                    <Form.Label>Name</Form.Label>
+                    <Form.Control type="text" placeholder="filter with name" onChange={handlechange} value={namefilter} name="namefilter"></Form.Control>
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="EmailFilter">
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control type="text" placeholder="filter with email" onChange={handlechange} value={emailfilter} name="emailfilter"></Form.Control>
+                    </Form.Group>
                 </Row>
-                <Row>
-                    <Col>
-                        <input type="text" placeholder="filter with role" onChange={handlechange} value ={rolefilter} name="rolefilter"></input>
-                    </Col>
-                    <Col>   
-                        <input type="text" placeholder="filter with createdBy" onChange={handlechange} value={createdByfilter} name="createdByfilter"></input>
-                    </Col>
+                <Row className="mb-3">
+                    <Form.Group as={Col} controlId="NameFilter">
+                    <Form.Label>Role</Form.Label>
+                    <Form.Control
+                        as="select"
+                        onChange={handlechange}
+                        value   =   {rolefilter}
+                        name    =   'rolefilter'
+                    >   
+                        <option value="all" >All</option>
+                        <option value="normal">Normal</option>
+                        <option value="admin">Admin</option>
+                    </Form.Control>
+                    </Form.Group>
+                    <Form.Group as={Col} controlId="EmailFilter">
+                    <Form.Label>createdBy</Form.Label>
+                    <Form.Control type="text" placeholder="filter with createdBy" onChange={handlechange} value={createdByfilter} name="createdByfilter"></Form.Control>
+                    </Form.Group>
                 </Row>
-            </Card>
+                <Form.Group as={Row} className="mb-3" >
+                    <Form.Label as="legend" column sm={4}>
+                        User Verified filter
+                    </Form.Label>
+                    <Col sm={8} >
+                        <Form.Check
+                        type="radio"
+                        label="All"
+                        name="verifieduser"
+                        id="allusers"
+                        checked ={verifiedfilter ==="allusers"}
+                        onChange={handlechange}
+                        />
+
+                        <Form.Check
+                        type="radio"
+                        label="verified"
+                        name="verifieduser"
+                        id="verifiedusers"
+                        onChange={handlechange}
+                        checked ={verifiedfilter ==='verifiedusers'}
+                        />
+                        <Form.Check
+                        type="radio"
+                        label="not-verified"
+                        name="verifieduser"
+                        id="notverifiedusers"
+                        onChange ={handlechange}
+                        checked ={verifiedfilter ==='notverifiedusers'}
+                        />
+                    </Col>
+                </Form.Group>
+            </Form>
             <div>
                 <div className="errors">
                     <div style={{color:"red"}} className="err_response" style={{color :   'red'}}>{errResponse}</div>

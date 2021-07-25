@@ -1,6 +1,5 @@
 import React,   {Component} from 'react';
-import {Form,Button, Row,Col} from 'react-bootstrap';
-import Spinner from 'react-bootstrap/Spinner'
+import {Form,Button, Row,Col,Nav,Spinner} from 'react-bootstrap';
 import {Redirect,Link} from 'react-router-dom';
 import axios from 'axios';
 import { logout } from '../../redux/actions/auth.actions';
@@ -116,8 +115,7 @@ class Signup extends Component{
             backgroundColor:"white",
             borderRadius    :   "10px",
             boxShadow   :   "0px 0px 10px -2px rgba(0,0,0,0.55)",
-            padding :   "30px",
-            marginTop :"10vh"
+            padding :   "2rem",
         };
         
 
@@ -220,6 +218,8 @@ class Signup extends Component{
                 <div style={{display:'flex',justifyContent:'space-between',flexDirection:'row'}}>
                     <a href="/login" >Login here</a>
                 </div>
+                <Nav.Link href ="/resendaccountactivationmail">Resend Account Activation</Nav.Link>
+
 
             </div>
     

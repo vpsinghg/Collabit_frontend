@@ -131,11 +131,9 @@ class Login extends Component{
             backgroundColor:"white",
             borderRadius    :   "10px",
             boxShadow   :   "0px 0px 10px -2px rgba(0,0,0,0.55)",
-            padding :   "30px",
-            marginTop :"10vh"
+            padding : "2rem"
         };
         const submit_button_style ={
-            marginTop : "20px"
         };
         return(
             <div

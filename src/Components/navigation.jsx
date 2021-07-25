@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 
 import Login from '../Components/Authentication/login';
 import Signup from '../Components/Authentication/Signup';
-import AdminDashboard from './Admin/admindashboard';
+// import AdminDashboard from './Admin/admindashboard';
+import Dashboard from './Admin/index';
 import AccountActivationEmail from './Authentication/resendaccountverificationmail';
 import ForgotPassword from './Authentication/forgotpassword';
 import ForgotPasswordChange from './Authentication/forgotpasswordchange';
@@ -17,6 +18,7 @@ class Navigation extends Component {
 
     render() {
       return (
+        <div style={{paddingTop:"10rem"}}>
           <Router>
             <Switch>
               <Route exact path="/resendaccountactivationmail">
@@ -35,8 +37,8 @@ class Navigation extends Component {
               <Route exact path="/register">
                 {this.props.isLoggedIn ? <Redirect to={"/" + this.props.role} /> : <Signup />}
               </Route>
-              <Route path="/admin">
-                {!(this.props.role==='admin') ? <Redirect to= {"/login"}/> : <AdminDashboard />}
+              <Route path="/admin" >
+                {!(this.props.role==='admin') ? <Redirect to= {"/login"}/> : <Dashboard isOpen={this.props.isOpen} toggle={this.props.toggle}/>}
               </Route>
               <Route path="/normal">
                 {! this.props.role==='normal' ? <Redirect to= {"/login"}/> : <UserDashboard />}
@@ -47,6 +49,7 @@ class Navigation extends Component {
 
             </Switch>
           </Router>
+          </div>
       )
     }
 }
