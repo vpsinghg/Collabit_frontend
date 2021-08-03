@@ -1,6 +1,8 @@
 import React,{Component} from 'react';
 import axios from 'axios';
 import { Row,Form,Col ,Spinner,Button} from 'react-bootstrap';
+import { connect } from 'react-redux';
+import {Redirect} from 'react-router-dom';
 
 class AccountActivationEmail extends Component{
     constructor(props){
@@ -15,21 +17,6 @@ class AccountActivationEmail extends Component{
         }
     }
 
-    componentDidMount(){
-        if(localStorage.getItem('token'))   {
-            const user  =   JSON.parse(localStorage.getItem("user"));
-            if(user.role    === 'admin'){
-                this.setState({
-                    redirect    :   "/admin",
-                });
-            }
-            else{
-                this.setState({
-                    redirect    :   "/user"
-                });
-            }
-        }
-    }
 
     handleChange    =   (e) =>  {
         this.setState({
@@ -99,6 +86,9 @@ class AccountActivationEmail extends Component{
 
 
         return(
+            this.props.isLoggedIn 
+            ? <Redirect to="/profile"/>
+            :
             <div
                 className="container"
                 style={conatiner_style}
@@ -145,4 +135,15 @@ class AccountActivationEmail extends Component{
 
 }
 
-export default AccountActivationEmail;
+const mapStateToProps = (state) => {
+    console.log(state);
+    return {
+        isLoggedIn: state.auth.isLoggedIn,
+    }
+}
+  
+  
+  
+
+
+export default connect(mapStateToProps)(AccountActivationEmail);

@@ -1,8 +1,8 @@
 import { useState,useEffect } from 'react';
 import Table from 'react-bootstrap/Table';
 import axios from 'axios';
-
-import { Row,Col,Card ,Form,Button} from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { Row,Col ,Form} from 'react-bootstrap';
 import { errorMessage } from '../../utils/errResponse';
 export const UserTable = (props)=>{
     const [users, setUsers] = useState([]);
@@ -10,10 +10,11 @@ export const UserTable = (props)=>{
     const [emailfilter, Setemailfilter] =   useState('');
     const [rolefilter, Setrolefilter] =   useState('all');
     const [verifiedfilter,Setverifiedfilter] =  useState('allusers')
-    const [createdByfilter, SetcreatedByfilter] =   useState('');
+    const [createdByfilter, SetcreatedByfilter] =   useState('all');
     const [errResponse, SeterrResponse] =useState("");
     const [successResponse, SetsuccessResponse] =useState("");
     const [datafectch,Setdatafetch] =useState(false);
+    const [createdByoptions,Setcreatedbyoptions] =useState([]);
 
     useEffect(()=>{
         const baseUrl = process.env.REACT_APP_Server_baseUrl;
@@ -22,7 +23,7 @@ export const UserTable = (props)=>{
             name    :   namefilter,
             email   :   emailfilter,
             role    :   rolefilter,
-            createdBy   :parseInt(createdByfilter),
+            createdBy   :createdByfilter,
             verified : verifiedfilter
         }
         console.log(data);
@@ -39,9 +40,28 @@ export const UserTable = (props)=>{
                 console.log(err);
             })
         
-    },[datafectch]);
+        }, [datafectch] // eslint-disable-line react-hooks/exhaustive-deps
+    );
+
+    useEffect(() => {
+        const baseUrl   =   process.env.REACT_APP_Server_baseUrl;
+        const targeturl =   baseUrl + '/api/admin/getadminusers/';
+        const config    ={
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        };
+        axios
+        .get(targeturl,config)
+        .then((Response)=>{
+            console.log(Response.data.admins);
+            Setcreatedbyoptions(Response.data.admins);
+        })
+        .catch((err)=>{
+            console.log(err);
+        })
+     }, []);
+     
+
     const handlechange    =(e)=>{
-        console.log(e.target.name);
         switch(e.target.name){
             case 'namefilter':{
                 Setnamefilter(e.target.value);
@@ -56,6 +76,7 @@ export const UserTable = (props)=>{
                 break;
             }
             case 'createdByfilter'  :{
+                console.log(e.target.value);
                 SetcreatedByfilter(e.target.value);
                 break;
             }
@@ -128,7 +149,7 @@ export const UserTable = (props)=>{
                     </Form.Group>
                 </Row>
                 <Row className="mb-3">
-                    <Form.Group as={Col} controlId="NameFilter">
+                    <Form.Group as={Col} controlId="RoleFilter">
                     <Form.Label>Role</Form.Label>
                     <Form.Control
                         as="select"
@@ -141,9 +162,23 @@ export const UserTable = (props)=>{
                         <option value="admin">Admin</option>
                     </Form.Control>
                     </Form.Group>
-                    <Form.Group as={Col} controlId="EmailFilter">
+                    <Form.Group as={Col} controlId="CreatedByFilter">
                     <Form.Label>createdBy</Form.Label>
-                    <Form.Control type="text" placeholder="filter with createdBy" onChange={handlechange} value={createdByfilter} name="createdByfilter"></Form.Control>
+                    <Form.Control
+                        as="select"
+                        value   = {createdByfilter}
+                        onChange={handlechange}
+                        name    =   'createdByfilter'
+                    > 
+                    <option value="all" >All</option>
+                    {
+                      createdByoptions.map((item,index)=>{
+                        return(
+                          <option key={index} value={item.id} >{props.loggedInUser.id ===item.id ?"Me":item.name +"(" +item.email +")"}</option>
+                        )
+                      })
+                    }
+                  </Form.Control>
                     </Form.Group>
                 </Row>
                 <Form.Group as={Row} className="mb-3" >
@@ -181,13 +216,12 @@ export const UserTable = (props)=>{
             </Form>
             <div>
                 <div className="errors">
-                    <div style={{color:"red"}} className="err_response" style={{color :   'red'}}>{errResponse}</div>
-                    <div style={{color:"green"}}className="successResponse " style={{color :   'green'}}>{successResponse}</div>
+                    <div style={{color:"red"}} className="err_response">{errResponse}</div>
+                    <div style={{color:"green"}}className="successResponse " >{successResponse}</div>
                 </div>
                 <Table striped bordered hover  responsive size="sm" style={{marginTop:"20px"}}>
                     <thead>
                         <tr>
-                            <th>id</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Role</th>
@@ -197,8 +231,7 @@ export const UserTable = (props)=>{
                     <tbody>
                         {users.map((item, i) => (
                             <tr key={i}>
-                                <td>{item.id}</td>
-                                <td>{item.name}</td>
+                                <td><a href={'/profile/users/user/' + item.id}>{item.name}</a></td>
                                 <td>{item.email}</td>
                                 <td>{item.role}</td>
                                 <td onClick={deleteUser.bind(this,item.id)}>delete</td>
@@ -211,5 +244,10 @@ export const UserTable = (props)=>{
     )
 
 }
+const mapStateToProps=(state)=>{
+    return{
+        loggedInUser: state.auth.loggedInUser
+    }
+}
 
-export default UserTable;
+export default connect(mapStateToProps)(UserTable);

@@ -1,40 +1,37 @@
 import React from 'react';
 import './App.css';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link
-} from "react-router-dom";
-
 // import Navbar
 import NavHeader from './Components/Nav';
 import Navigation from './Components/navigation';
-
+import {sidebarstatus} from './redux/actions/ui.actions';
+import {connect} from 'react-redux';
 class App extends React.Component {
 
   constructor(props){
     super(props);
     this.state={
-      isOpen  : false,
+      isOpen  : true,
       isMobile  : true,
     }
-    this.previousWidth = -1;
-    this.toggle =  this.toggle.bind(this);
 
   }
 
   updateWidthStatus(){
     const width = window.innerWidth;
-    const widthLimit  = 576;
+    const widthLimit  = 430;
     const isMobile = width <= widthLimit;
-    const wasMobile = this.previousWidth <=widthLimit;
-    if(isMobile !==wasMobile){
+    if(isMobile){
       this.setState({
-        isOpen : !isMobile,
-      });
+        isOpen :false
+      })
     }
-    this.previousWidth =  width;
+    else{
+      this.setState({
+        isOpen :true
+      })
+    }
+    const {sidebarstatus} =this.props;
+    sidebarstatus(this.state.isOpen);  
   }
 
   componentDidMount(){
@@ -43,23 +40,22 @@ class App extends React.Component {
   }
 
   componentWillUnmount(){
-    window.removeEventListener("resize",this.updateWidthStatus.bind(this));
-  }
-
-  // toggle method
-  toggle  = () => {
-    this.setState({isOpen : !this.state.isOpen});
   }
 
   render(){
   return (
-    <div className="App wrapper">
-        <NavHeader  toggle={this.toggle} isOpen={this.state.isOpen}/>
-        <Navigation  toggle ={this.toggle} isOpen={this.state.isOpen}/>
+    <div className="App">
+        <NavHeader  />
+        <Navigation />
     </div>
   );
   }
 }
 
+const mapDispatchToProps = dispatch => ({
+  sidebarstatus :(newstatus)   =>{
+      dispatch(sidebarstatus(newstatus));
+  }
+});
 
-export default App;
+export default connect(null,mapDispatchToProps)(App);

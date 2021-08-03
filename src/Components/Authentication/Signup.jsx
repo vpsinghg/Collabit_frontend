@@ -1,10 +1,8 @@
 import React,   {Component} from 'react';
 import {Form,Button, Row,Col,Nav,Spinner} from 'react-bootstrap';
-import {Redirect,Link} from 'react-router-dom';
 import axios from 'axios';
-import { logout } from '../../redux/actions/auth.actions';
 import { connect } from 'react-redux';
-
+import { Redirect } from 'react-router';
 
 // utils errResponse
 import { errorMessage } from '../../utils/errResponse';
@@ -23,23 +21,9 @@ class Signup extends Component{
             errResponse :   "",
             successResponse :   ""
         }
-        console.log(props);
     }
 
     componentDidMount(){
-        if(localStorage.getItem('token'))   {
-            const user  =   JSON.parse(localStorage.getItem("user"));
-            if(user.role    === 'admin'){
-                this.setState({
-                    redirect    :   "/admin",
-                });
-            }
-            else{
-                this.setState({
-                    redirect    :   "/user"
-                });
-            }
-        }
     }
 
     handleChange    =   (e) =>  {
@@ -124,6 +108,9 @@ class Signup extends Component{
         }
 
         return(
+            this.props.isLoggedIn 
+            ? <Redirect to="/profile"/>
+            :
             <div
                 className="container"
                 style={conatiner_style}
@@ -229,18 +216,12 @@ class Signup extends Component{
 };
 
 const mapStateToProps = (state) => {
-    console.log(state);
     return {
         isLoggedIn: state.auth.isLoggedIn
     }
-  }
+}
   
   
-  const mapDispatchToProps = dispatch => ({
-    logout: () => {
-      dispatch(logout());
-    },
-  });
   
   
-  export default connect(mapStateToProps,mapDispatchToProps)(Signup);
+export default connect(mapStateToProps)(Signup);

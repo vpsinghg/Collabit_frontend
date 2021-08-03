@@ -1,16 +1,14 @@
 const initialState =    {
     isLoggedIn  :   localStorage.getItem('token')   ?   true    :   false,
-    LoggedInUser    : localStorage.getItem('user')  ?   JSON.parse(localStorage.getItem('user'))    : {},
+    loggedInUser    : localStorage.getItem('user')  ?   JSON.parse(localStorage.getItem('user'))    : {},
 };
 
 const AuthReducer   =   ( state =   initialState,   action) =>{
-    console.log(action);
     switch(action.type){
         case    'LOGIN' :{
-            console.log("reducer","login");
             return({
                 isLoggedIn  :   true,
-                LoggedInUser    :   {...action.payload}
+                loggedInUser    :   {...action.payload}
             });
         }
         case    'LOGOUT'    :{
@@ -18,17 +16,8 @@ const AuthReducer   =   ( state =   initialState,   action) =>{
             localStorage.clear();
             return({
                 isLoggedIn  :   false,
-                LoggedInUser    :   {}
+                loggedInUser    :   {}
             });
-        }
-        case 'hello':{
-            console.log("reducer","Logout");
-            localStorage.clear();
-            return({
-                isLoggedIn  :   false,
-                LoggedInUser    :   {}
-            });
-
         }
         default:{
             return state;

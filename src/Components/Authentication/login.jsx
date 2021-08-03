@@ -3,18 +3,9 @@ import React,   {Component} from 'react';
 import {Form,Button, Row,Col} from 'react-bootstrap';
 import Spinner from 'react-bootstrap/Spinner'
 import axios from 'axios';
-import { logout,login } from '../../redux/actions/auth.actions';
+import { login } from '../../redux/actions/auth.actions';
 import { connect } from 'react-redux';
-import store from '../../redux/store';
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
-    Redirect,
-    withRouter
-  } from "react-router-dom";
-
+import { Redirect } from "react-router";
 // import errMessage utils function
 import { errorMessage } from "../../utils/errResponse";
 
@@ -83,25 +74,13 @@ class Login extends Component{
                         localStorage.setItem("token",res.data.token);
                         localStorage.setItem("user",JSON.stringify(res.data.user));
                         this.setState({
-                            user    :   res.data.user
+                            user    :   res.data.user,
+                            errResponse :   "",
+                            successResponse :   res.data['message']
+
                         });
                         const { login } = this.props;
                         login(res.data.user);
-                        this.setState({
-                            errResponse :   "",
-                            successResponse :   res.data['message']
-                        });
-
-                        if(res.data.user.role   === "admin")    {
-                            this.setState({
-                                redirect    :   '/admin',
-                            });
-                        }
-                        else{
-                            this.setState({
-                                redirect    :   '/user',
-                            });
-                        }
                     }).catch((err)=>{
                         console.log(err);
                         this.setState({loading  :   false});
@@ -135,15 +114,19 @@ class Login extends Component{
         };
         const submit_button_style ={
         };
+        const {isLoggedIn} =this.props;
         return(
+            isLoggedIn 
+            ? <Redirect to="/profile"/>
+            :
             <div
                 className="container"
                 style={conatiner_style}
             >
                 <h2 style={{textAlign:'center'}}>Login</h2>
                 <div style={{color:"red"}} className="err_response">{this.state.errResponse}</div>
-                 <div style={{color:"green"}} className="successResponse">{this.state.successResponse}</div>
-                 <br/>
+                <div style={{color:"green"}} className="successResponse">{this.state.successResponse}</div>
+                <br/>
 
                  <Form
                     noValidate
@@ -212,9 +195,8 @@ class Login extends Component{
 }
 
 const mapStateToProps = (state) => {
-    console.log(state);
     return {
-        isLoggedIn: state.auth.isLoggedIn
+        isLoggedIn: state.auth.isLoggedIn,
     }
   }
   

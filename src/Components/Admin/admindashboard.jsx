@@ -1,26 +1,41 @@
 import React,{Component} from 'react';
-// create user
-import CreateUser from '../Admin/createuser';
 // list users
 import UserTable from './UserTable';
-// home dashboard
-import Dashboard from './dashboard';
-import { Row,Col } from 'react-bootstrap';
-
 import { connect } from 'react-redux';
 import classNames from "classnames";
-
+import BreadcrumbComponent from '../Breadcrumb';
+import CreateUserModalComponent from "./createUser/createusermodal";
+import { Col,Row } from 'react-bootstrap';
 export class AdminDashboard extends Component{
-    constructor(props){
-        super(props);
-    }
-
     render(){
+        const routesList = [
+            {
+                url : '/',
+                name :'Home'
+            },
+            {
+                url : '/profile',
+                name :'DashBoard'
+            },
+            {
+                url : '/profile/users',
+                name : 'User Management'
+            },
+        ]
+
         return(
             <div className={classNames("admindashboardmain", { "is-open": this.props.isOpen })}>
-            {console.log(this.props.activetab)}
-                {this.props.activetab ==="home" && <Dashboard/>}
-                {this.props.activetab ==="user" && (<div><CreateUser/> <UserTable/></div>)}
+                <div style={{marginLeft:"2%"}}>
+                    <Row>
+                        <Col>
+                            <BreadcrumbComponent routesList={routesList}/>
+                        </Col>
+                        <Col>
+                            <CreateUserModalComponent/>
+                        </Col>
+                    </Row>
+                    <UserTable/>
+                </div>
             </div>
         )
     }
@@ -28,7 +43,8 @@ export class AdminDashboard extends Component{
 
 const mapStatetoProps = (state) =>{
     const {auth}    =   state;
-    return {auth};
+    const isOpen =  state.ui.sidebarstatusopen
+    return {auth,isOpen};
 }
 
 export default connect(mapStatetoProps)(AdminDashboard);

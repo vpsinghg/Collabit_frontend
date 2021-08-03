@@ -1,7 +1,6 @@
 import React,{Component} from 'react';
 
-import { Navbar ,Nav,Button} from 'react-bootstrap';
-import { Link,withRouter } from 'react-router-dom';
+import { Navbar ,Nav} from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
 // import logout
 import { logout } from '../redux/actions/auth.actions';
@@ -10,20 +9,21 @@ import { connect } from 'react-redux';
 // font awesome icon
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
+import { sidebarstatus } from "../redux/actions/ui.actions";
 
 export class NavHeader extends Component{
-  constructor(props){
-    super(props);
-  }
-  handleShowSideBar=(e)=>{
-    this.props.toggle();
-  }
-  componentDidMount(){
-  }
-  Logout= ()=>{
+
+  logout= ()=>{
     const { logout } = this.props;
     logout();
   };
+
+  togglesidebar = (e) =>{
+    const {sidebarstatus} = this.props;
+    const newstate = ! this.props.isOpen;
+    sidebarstatus(newstate);
+  }
+
   render(){
     return(
       <div>
@@ -33,15 +33,19 @@ export class NavHeader extends Component{
             {this.props.isLoggedIn  ?
             (
               <Nav className="mr-auto">
-                <Nav.Link variant="outline-info" onClick={this.props.toggle}>
+                <Nav.Link variant="outline-info" onClick={this.togglesidebar}>
                   <FontAwesomeIcon icon={faAlignLeft} />
                 </Nav.Link>
-                <Nav.Link href={"/" +this.props.role}>Profile</Nav.Link>
-                <Nav.Link onClick={this.Logout}>Logout</Nav.Link>
+                <Nav.Link href="/profile">Profile</Nav.Link>
+                <Nav.Link onClick={this.logout}>Logout</Nav.Link>
               </Nav>
             )
             :(
-              <Nav className="me-auto">
+              <Nav className="mr-auto">
+                <Nav.Link variant="outline-info" onClick={this.togglesidebar}>
+                  <FontAwesomeIcon icon={faAlignLeft} />
+                </Nav.Link>
+
                 <Nav.Link href="/register">SignUp</Nav.Link>
                 <Nav.Link href="/login">Login</Nav.Link>
               </Nav>
@@ -57,7 +61,8 @@ export class NavHeader extends Component{
 const mapStateToProps = (state) => {
   return {
       isLoggedIn: state.auth.isLoggedIn,
-      role :  state.auth.LoggedInUser.role
+      role :  state.auth.loggedInUser.role,
+      isOpen  :   state.ui.sidebarstatusopen,
   }
 }
 
@@ -66,6 +71,9 @@ const mapDispatchToProps = dispatch => ({
   logout: () => {
     dispatch(logout());
   },
+  sidebarstatus:  (newstate)=>{
+    dispatch(sidebarstatus(newstate));
+  }
 });
 
 

@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Row,Form,Col ,Spinner,Button} from 'react-bootstrap';
 
 import { errorMessage } from '../../utils/errResponse';
+import { connect } from 'react-redux';
+import {Redirect}   from 'react-router-dom';
 
 class ForgotPasswordChange extends Component{
     constructor(props){
@@ -18,8 +20,6 @@ class ForgotPasswordChange extends Component{
         }
     }
 
-    componentDidMount(){
-    }
 
     handleChange    =   (e) =>  {
         this.setState({
@@ -42,7 +42,7 @@ class ForgotPasswordChange extends Component{
             this.setState({ loading :  true},  ()  =>{
                 const baseUrl = process.env.REACT_APP_Server_baseUrl;
                 const token =   this.props.match.params.token;
-                const targeturl =   baseUrl +'/api/auth/forget_password_update/?' +'token='+token;
+                const targeturl =   baseUrl +'/api/auth/forget_password_update/?token='+token;
                 console.log(targeturl);
                 const data = {
                     password    :   this.state.password,
@@ -98,6 +98,9 @@ class ForgotPasswordChange extends Component{
 
 
         return(
+            this.props.isLoggedIn 
+            ? <Redirect to="/profile"/>
+            :
             <div
                 className="container"
                 style={conatiner_style}
@@ -160,4 +163,11 @@ class ForgotPasswordChange extends Component{
 
 }
 
-export default ForgotPasswordChange;
+const mapStateToProps = (state) => {
+    console.log(state);
+    return {
+        isLoggedIn: state.auth.isLoggedIn,
+    }
+}
+
+export default connect(mapStateToProps)(ForgotPasswordChange);

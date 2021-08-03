@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route, Redirect, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Login from '../Components/Authentication/login';
@@ -11,42 +11,43 @@ import ForgotPassword from './Authentication/forgotpassword';
 import ForgotPasswordChange from './Authentication/forgotpasswordchange';
 import UserDashboard from './NormalUser';
 import CreatePassword from './Authentication/createpassword';
-class Navigation extends Component {
-    constructor(props){
-      super(props);
-    }
+import TaskManagementDashboard from './taskmanagement';
+// protected route
+import ProtectedRouteComponent from './protectedroutecomponent';
+//
+import UserprofileDashBoard from './userprofile';
 
+import Error_404 from './page_404_error';
+class Navigation extends Component {
     render() {
       return (
-        <div style={{paddingTop:"10rem"}}>
+        <div style={{paddingTop:"5rem"}}>
           <Router>
             <Switch>
+              <Route path="/login">
+                <Login/>
+              </Route>
+              <Route path="/register">
+                <Signup/>
+              </Route>
               <Route exact path="/resendaccountactivationmail">
-                {this.props.isLoggedIn ? <Redirect to={"/" + this.props.role} /> : <AccountActivationEmail />}
+                <AccountActivationEmail/>
               </Route>
-              <Route exact path="/forgetpassword">
-                {this.props.isLoggedIn ? <Redirect to={"/" + this.props.role} /> : <ForgotPassword />}
+              <Route exact path="/">
+                <Login/>
               </Route>
-              <Route  path="/forgetpasswordchange/:token" component={ForgotPasswordChange}>
-      
+              <Route exact path='/forgetpassword'>
+                <ForgotPassword/>
               </Route>
-              <Route path="/createpassword/:token" component={CreatePassword}></Route>
-              <Route exact path="/login">
-                {this.props.isLoggedIn ? <Redirect to={"/" + this.props.role} /> : <Login />}
+              <Route exact path="/forgotpasswordchange/:token" component={ForgotPasswordChange}>
               </Route>
-              <Route exact path="/register">
-                {this.props.isLoggedIn ? <Redirect to={"/" + this.props.role} /> : <Signup />}
+              <Route exact path="/createpassword/:token" component={CreatePassword}>
               </Route>
-              <Route path="/admin" >
-                {!(this.props.role==='admin') ? <Redirect to= {"/login"}/> : <Dashboard isOpen={this.props.isOpen} toggle={this.props.toggle}/>}
-              </Route>
-              <Route path="/normal">
-                {! this.props.role==='normal' ? <Redirect to= {"/login"}/> : <UserDashboard />}
-              </Route>
-              <Route  path="/" >
-                {!this.props.isLoggedIn ? <Redirect to="/login" /> : <Redirect to={"/" +this.props.role} />}
-              </Route>
-
+              <ProtectedRouteComponent exact path="/profile" component={UserDashboard}/>
+              <ProtectedRouteComponent exact path="/profile/users" component={Dashboard} />
+              <ProtectedRouteComponent path="/profile/users/user/:id" component={UserprofileDashBoard} />
+              <ProtectedRouteComponent path="/profile/tasks" component={TaskManagementDashboard} />
+              <Route component={Error_404}/>
             </Switch>
           </Router>
           </div>
@@ -54,10 +55,9 @@ class Navigation extends Component {
     }
 }
 const mapStateToProps = (state) => {
-  console.log(state);
   return {
       isLoggedIn: state.auth.isLoggedIn,
-      role : state.auth.LoggedInUser.role,
+      role : state.auth.loggedInUser.role,
   }
 }
 

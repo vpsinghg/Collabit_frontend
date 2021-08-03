@@ -1,26 +1,22 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faHome,
-  faBriefcase,
-  faPaperPlane,
-  faQuestion,
-  faImage,
   faTimes
 } from "@fortawesome/free-solid-svg-icons";
 import { Nav, Button } from "react-bootstrap";
 import classNames from "classnames";
-
-
 import {connect} from 'react-redux';
-
+import { sidebarstatus } from "../../redux/actions/ui.actions";
 class SideBar extends React.Component {
-  constructor(props){
-    super(props);
-    this.handleClick =this.handleClick.bind(this);
-  }
   handleClick = (e ) =>{
     this.props.tabtoggle(e.target.id);
+  }
+
+  togglesidebar = (e) =>{
+    console.log(this.props);
+    const {sidebarstatus} = this.props;
+    const newstate = ! this.props.isOpen;
+    sidebarstatus(newstate);
   }
   render() {
     return (
@@ -28,44 +24,54 @@ class SideBar extends React.Component {
         <div className="sidebar-header">
           <Button
             variant="link"
-            onClick={this.props.toggle}
-            style={{ color: "#fff" }}
+            onClick={this.togglesidebar}
+            style={{ color: "#dc3545" }}
             className="mt-4"
           >
             <FontAwesomeIcon icon={faTimes} pull="right" size="xs" />
           </Button>
-          <h3>Welcome, {this.props.auth.LoggedInUser.name}</h3>
+          <h3>Welcome, {this.props.loggedInUser.name}</h3>
         </div>
         <hr/>
         <Nav className="flex-column pt-2">
-
           <Nav.Item >
-            <Nav.Link id="home" className="active" onClick={this.handleClick} >
-              Home
+            <Nav.Link id="home" className="active" href="/" >
+              Dashboard
             </Nav.Link>
           </Nav.Item>
+          { this.props.loggedInUser.role ==="admin" &&
           <Nav.Item >
-            <Nav.Link id="user" onClick={this.handleClick}>
+            <Nav.Link id="user" href="/profile/users">
               User Management
             </Nav.Link>
           </Nav.Item>
-
+          } 
           <Nav.Item >
-            <Nav.Link id="task" onClick={this.handleClick}>
+            <Nav.Link id="task" href="/profile/tasks">
               Task Managements
             </Nav.Link>
           </Nav.Item>
-
         </Nav>
       </div>
     );
   }
 }
 
-const mapStatetoProps = (state) =>{
-  const {auth}    =   state;
-  return {auth};
+const mapStateToProps = (state) => {
+  return {
+      isLoggedIn: state.auth.isLoggedIn,
+      loggedInUser: state.auth.loggedInUser,
+      isOpen  :   state.ui.sidebarstatusopen,
+  }
 }
 
 
-export default connect(mapStatetoProps)(SideBar);
+const mapDispatchToProps = dispatch => ({
+  sidebarstatus :(newstatus)   =>{
+      dispatch(sidebarstatus(newstatus));
+  }
+});
+
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(SideBar);

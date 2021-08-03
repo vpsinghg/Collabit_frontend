@@ -1,0 +1,10 @@
+.status.assigned{
+    color:rgb(209, 44, 173);
+}
+
+.status.completed{
+    color: springgreen;
+}
+.status.in-progress{
+    color: #90EE90;
+}

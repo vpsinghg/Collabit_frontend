@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Row,Form,Col ,Spinner,Button} from 'react-bootstrap';
 
 import { errorMessage } from '../../utils/errResponse';
+import { connect } from 'react-redux';
+import {Redirect}   from 'react-router-dom';
 
 class ForgotPassword extends Component{
     constructor(props){
@@ -17,21 +19,6 @@ class ForgotPassword extends Component{
         }
     }
 
-    componentDidMount(){
-        if(localStorage.getItem('token'))   {
-            const user  =   JSON.parse(localStorage.getItem("user"));
-            if(user.role    === 'admin'){
-                this.setState({
-                    redirect    :   "/admin",
-                });
-            }
-            else{
-                this.setState({
-                    redirect    :   "/user"
-                });
-            }
-        }
-    }
 
     handleChange    =   (e) =>  {
         this.setState({
@@ -105,6 +92,9 @@ class ForgotPassword extends Component{
             marginTop : "20px"
         };
         return(
+            this.props.isLoggedIn 
+            ? <Redirect to="/profile"/>
+            :
             <div
                 className="container"
                 style={conatiner_style}
@@ -151,4 +141,12 @@ class ForgotPassword extends Component{
 
 }
 
-export default ForgotPassword;
+const mapStateToProps = (state) => {
+    console.log(state);
+    return {
+        isLoggedIn: state.auth.isLoggedIn,
+    }
+}
+
+
+export default connect(mapStateToProps)(ForgotPassword);

@@ -40,7 +40,7 @@ class CreatePassword extends Component{
             this.setState({ loading :  true},  ()  =>{
                 const baseUrl = process.env.REACT_APP_Server_baseUrl;
                 const token =   this.props.match.params.token;
-                const targeturl =   baseUrl +'/api/auth/create_password/?' +'token='+token;
+                const targeturl =   baseUrl +'/api/auth/create_password/?token='+token;
                 const data = {
                     password    :   this.state.password,
                     password_confirmation    :   this.state.password_confirmation
@@ -92,16 +92,14 @@ class CreatePassword extends Component{
         const submit_button_style ={
             marginTop : "20px"
         };
-
-
         return(
             <div
                 className="container"
                 style={conatiner_style}
             >
                 <h2 style={{textAlign:'center'}}>Create Password</h2>
-                <div style={{color:"red"}} className="err_response" style={{color :   'red'}}>{this.state.errResponse}</div>
-                <div style={{color:"green"}}className="successResponse " style={{color :   'green'}}>{this.state.successResponse}</div>
+                <div style={{color:"red"}} className="err_response" >{this.state.errResponse}</div>
+                <div style={{color:"green"}}className="successResponse ">{this.state.successResponse}</div>
                 <br/>
                 <Form
                     noValidate
