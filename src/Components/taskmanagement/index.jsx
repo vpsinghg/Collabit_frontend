@@ -47,7 +47,9 @@ class TaskManagementDashboard extends Component{
                         </Col>
                     </Row>
                     <Row>
-                        <Col md={{span:12}} sm={{span:12}}>
+                        <Tasks/>
+
+                        {/* <Col md={{span:12}} sm={{span:12}}>
                             <Tabs defaultActiveKey="list" className="mb-12" style={{display:"flex",flexDirection:"row",justifyContent:"space-around",flexFlow:"row nowrap",alignContent: "center"}}>
                                 <Tab eventKey="list" title="List">
                                     <Tasks/>
@@ -59,7 +61,7 @@ class TaskManagementDashboard extends Component{
                                     <h1>Archived</h1>
                                 </Tab>
                             </Tabs>
-                        </Col>
+                        </Col> */}
                     </Row>
                 </div>
             </div>
@@ -69,8 +71,9 @@ class TaskManagementDashboard extends Component{
 
 const mapStatetoProps = (state) =>{
     const {auth}    =   state;
-    const isOpen =  state.ui.sidebarstatusopen
-    return {auth,isOpen};
+    const isOpen =  state.ui.sidebarstatusopen;
+    const {tasks} =state
+    return {auth,isOpen,tasks};
 }
 
 

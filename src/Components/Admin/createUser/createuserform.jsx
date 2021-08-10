@@ -6,7 +6,7 @@ import { Component } from 'react';
 
 const schema = Yup.object().shape({
   name: Yup.string()
-    .max(15, 'Must be 20 characters or less')
+    .max(255, 'Must be 255 characters or less')
     .required('Required'),
   email: Yup.string().required(),
   role: Yup.string().required(),
@@ -43,6 +43,7 @@ export class CreateUserForm extends Component{
                 <Form.Control
                   type="text"
                   name="name"
+                  placeholder = "Name"
                   value={values.name}
                   onChange={handleChange}
                   isInvalid={!!errors.name}

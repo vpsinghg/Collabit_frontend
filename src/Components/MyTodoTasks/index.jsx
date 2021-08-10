@@ -2,13 +2,14 @@ import axios from 'axios';
 import React,{Component} from 'react';
 import { connect } from 'react-redux';
 import TodoTaskItem from './todotaskitem/TodotaskItem';
+import { logout } from '../../redux/actions/auth.actions';
 export class MyTodoTasks extends Component{
     state ={
         todotaskslist   :[]
     }
     componentDidMount(){
         const baseUrl = process.env.REACT_APP_Server_baseUrl;
-        const targeturl =   baseUrl +'/api/tasks/todotasks/';
+        const targeturl =   baseUrl +'/api/tasks/todotasks/today';
         const config    ={
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         };
@@ -20,13 +21,21 @@ export class MyTodoTasks extends Component{
                     todotaskslist : res.data.tasks,
                 })
             }).catch((err)=>{
-                console.log(err.response)
+                if(err.response.status  ===400){
+                    const {logout}  =   this.props;
+                    logout();
+                }
+                
             })
     }
 
     render(){
         return(
             <>
+            {
+                this.state.todotaskslist.length ===0 && 
+                <p className="notasks">You don't have any tasks for today</p>
+            }
             {
             this.state.todotaskslist.map((todotaskitem,index)=>{
                 return(
@@ -45,4 +54,10 @@ const mapStateToProps   =   (state)=>{
     }
 }
 
-export default connect(mapStateToProps)(MyTodoTasks);
+const mapDispatchToProps = dispatch => ({
+    logout: () => {
+      dispatch(logout());
+    },
+});
+
+export default connect(mapStateToProps,mapDispatchToProps)(MyTodoTasks);

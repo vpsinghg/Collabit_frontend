@@ -11,7 +11,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import { sidebarstatus } from "../redux/actions/ui.actions";
 
+
+
+
+
+
 export class NavHeader extends Component{
+
+  componentDidMount(){
+  }
 
   logout= ()=>{
     const { logout } = this.props;
@@ -23,6 +31,7 @@ export class NavHeader extends Component{
     const newstate = ! this.props.isOpen;
     sidebarstatus(newstate);
   }
+
 
   render(){
     return(
@@ -36,16 +45,12 @@ export class NavHeader extends Component{
                 <Nav.Link variant="outline-info" onClick={this.togglesidebar}>
                   <FontAwesomeIcon icon={faAlignLeft} />
                 </Nav.Link>
-                <Nav.Link href="/profile">Profile</Nav.Link>
+                <Nav.Link href={"/profile/users/user/"+this.props.loggedInUser.id}>Profile</Nav.Link>
                 <Nav.Link onClick={this.logout}>Logout</Nav.Link>
               </Nav>
             )
             :(
               <Nav className="mr-auto">
-                <Nav.Link variant="outline-info" onClick={this.togglesidebar}>
-                  <FontAwesomeIcon icon={faAlignLeft} />
-                </Nav.Link>
-
                 <Nav.Link href="/register">SignUp</Nav.Link>
                 <Nav.Link href="/login">Login</Nav.Link>
               </Nav>
@@ -61,6 +66,7 @@ export class NavHeader extends Component{
 const mapStateToProps = (state) => {
   return {
       isLoggedIn: state.auth.isLoggedIn,
+      loggedInUser :state.auth.loggedInUser,
       role :  state.auth.loggedInUser.role,
       isOpen  :   state.ui.sidebarstatusopen,
   }

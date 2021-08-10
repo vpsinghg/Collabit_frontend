@@ -4,17 +4,9 @@ class AllTaskCard extends Component {
   state = {};
   render() {
     const dueDate = this.props.task.dueDate;
+    const newdueDate =new Date(dueDate);
     const today = new Date();
-    const date =
-      today.getFullYear() +
-      "-" +
-      (today.getMonth() + 1) +
-      "-" +
-      today.getDate();
-    const time =
-      today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-    const dateTime = date + " " + time;
-    const subDate = this.props.task.dueDate.slice(0, 16);
+    const overduecondition =  newdueDate.getTime()>today.getTime()
     return (
       <div
         style={{
@@ -26,21 +18,23 @@ class AllTaskCard extends Component {
           boxShadow: "1px 1px 5px 0px rgba(0,0,0,0.55)",
         }}
       >
-        {dateTime > dueDate && this.props.task.status !== "completed" ? (
+        {!overduecondition && this.props.task.status !== "completed" ? (
           <p  className="overdueDate">
-            {subDate} [OVERDUE]
+            {dueDate} [OVERDUE]
           </p>
         ) : (
           <p  className="notoverdueDate">
-            {subDate}
+            {dueDate}
           </p>
         )}
         <b>{this.props.task.title}</b>
         <p>{this.props.task.description}</p>
-        <p style={{ float: "right" }}>
-          Assigned to: {this.props.task.assignee}
-        </p>
-        <p>Assigned by: {this.props.task.user_id}</p>
+        <i style={{float:"right"}}>Assigned by :
+          <a href={"/profile/users/user/"+this.props.task.user_id}>{this.props.task.creatorname}</a>
+        </i>
+        <i >Assigned to : 
+          <a href={"/profile/users/user/"+this.props.task.assignee}>{this.props.task.assigneename}</a>
+        </i>
       </div>
     );
   }

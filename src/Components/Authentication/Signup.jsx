@@ -1,27 +1,40 @@
 import React,   {Component} from 'react';
-import {Form,Button, Row,Col,Nav,Spinner} from 'react-bootstrap';
+import {Form,Button, Row,Col,Nav} from 'react-bootstrap';
 import axios from 'axios';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router';
-
+import {Formik} from 'formik';
+import * as Yup from 'yup';
 // utils errResponse
 import { errorMessage } from '../../utils/errResponse';
 
+const schema = Yup.object().shape({
+    name: Yup.string().max(255).required('Required'),
+    email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+    password: Yup
+        .string()
+        .required("Please enter your password")
+        .matches(
+            /^.*(?=.{8,})((?=.*[!@#$%^&*()\-_=+{};:,<.>]){1})(?=.*\d)((?=.*[a-z]){1})((?=.*[A-Z]){1}).*$/,
+            "Password must contain at least 8 characters, one uppercase, one number and one special case character"
+    ),
+    password_confirmation: Yup
+        .string()
+        .required("Please confirm your password")
+        .when("password", {
+            is: password => (password && password.length > 0 ? true : false),
+            then: Yup.string().oneOf([Yup.ref("password")], "Password doesn't match")
+    })
+});
+  
 class Signup extends Component{
-    constructor(props){
-        super(props);
-        this.state ={
-            name    :   '',
-            email   :   '',
-            password    :   '',
-            password_confirmation   :   '',
-            validated   :   false,
-            loading :   false,
+        state ={
+            submitsuccessfull   :   false,
             redirect    :   "",
             errResponse :   "",
             successResponse :   ""
         }
-    }
+    
 
     componentDidMount(){
     }
@@ -32,182 +45,159 @@ class Signup extends Component{
         });
     }
 
-    handleSubmit    =   (e) =>  {
-        e.preventDefault();
-        const   form    =   e.currentTarget;
-        if(form.checkValidity()===false){
-            e.preventDefault();
-            e.stopPropagation();
-        }
+    handleformsubmit=(values, {setSubmitting, resetForm}) => {
+        setSubmitting(true);
+        const baseUrl = process.env.REACT_APP_Server_baseUrl;
+        const targeturl =   baseUrl +'/api/auth/register/';
+        axios
+            .post(targeturl,values)
+            .then((res)=>{
+                this.setState({
+                    errResponse    :   "",
+                    successResponse    :   res.data.message 
+                });
+                setTimeout(() => {
+                    resetForm();
+                    setSubmitting(false);
+                }, 100);
+                this.setState({
+                    submitsuccessfull   :   true
+                });    
 
-        this.setState({
-            validated   :   true,
-        });
-        if(form.checkValidity() === true){
-            this.setState({ loading :  true},  ()  =>{
-                const baseUrl = process.env.REACT_APP_Server_baseUrl;
-                const targeturl =   baseUrl +'/api/auth/register/';
-                const user = {
-                    name: this.state.name,
-                    email: this.state.email,
-                    password: this.state.password,
-                    password_confirmation: this.state.password_confirmation
-                  };
-              
-                axios
-                    .post(targeturl,user)
-                    .then((res)=>{
-                        this.setState({
-                            loading :   false,
-                        });
-                        console.log(res);
-                        this.setState({
-                            errResponse    :   "",
-                            name    :   '',
-                            email   :   '',
-                            password    :   '',
-                            password_confirmation   :   '',
-                            successResponse    :   res.data.message 
-                        });
-    
+            })
+            .catch((err)=>{
+                if(err.response.status  === 422){
+                    this.setState({
+                        errResponse :   errorMessage(err.response.data)
                     })
-                    .catch((err)=>{
-                        this.setState({
-                            loading :   false,
-                        });
-                        if(err.response.status  === 422){
-                            this.setState({
-                                errResponse :   errorMessage(err.response.data)
-                            })
-                        }
-                        else{
-                            this.setState({
-                                errResponse :   err.response.data['message'],
-                            })
-                        }
-                    });
-            });    
-        }
+                }
+                else{
+                    this.setState({
+                        errResponse :   err.response.data['message'],
+                    })
+                }
+            });
     }
 
 
 
 
     render ()   {
-        const conatiner_style={
-            maxWidth:"60%",
-            backgroundColor:"white",
-            borderRadius    :   "10px",
-            boxShadow   :   "0px 0px 10px -2px rgba(0,0,0,0.55)",
-            padding :   "2rem",
-        };
-        
-
-        const submit_button_style ={
-            marginTop : "20px"
-        }
-
         return(
             this.props.isLoggedIn 
             ? <Redirect to="/profile"/>
             :
             <div
-                className="container"
-                style={conatiner_style}
+                className="container authcontainer"
             >
                 <h2 style={{textAlign:'center'}}>Sign Up</h2>
                 <div style={{color:'red'}} className="err_response">{this.state.errResponse}</div>
                 <div style={{color:'green'}} className="successResponse">{this.state.successResponse}</div>
                 <br/>
-
-                <Form
-                    noValidate
-                    validated   =   {this.state.validated}
-                    onSubmit    =   {this.handleSubmit}
+                <Formik
+                    validationSchema={schema}
+                    onSubmit={this.handleformsubmit}
+                    initialValues={{
+                        name    : '',
+                        email   : '',
+                        password    :   '',
+                        password_confirmation   :   '',
+                    }}
                 >
-                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalFullname">
-                        <Form.Label column sm={2}>
-                            FullName
-                        </Form.Label>
-                        <Col sm={10}>
-                            <Form.Control   
-                                type    =   "text"
-                                placeholder =   "Enter your Full Name"
-                                name    =   "name"
-                                onChange    =   {this.handleChange}
-                                value   =   {this.state.name}
+                    {({
+                        handleSubmit,
+                        handleChange,
+                        values,
+                        isValid,
+                        isSubmitting,
+                        errors,
+                    }) => (
+                        <>
+                            {
+                                !this.state.submitsuccessfull &&
 
-                                required
-                            />
-                        </Col>
-                    </Form.Group>
+                                <Form noValidate onSubmit={handleSubmit}>
+                                    <Form.Group as={Row} className="mb-3" controlId="formHorizontalFullname">
+                                        <Form.Label column sm={2}>
+                                            FullName
+                                        </Form.Label>
+                                        <Col sm={10}>
+                                            <Form.Control   
+                                                type    =   "text"
+                                                placeholder =   "Enter your Full Name"
+                                                name    =   "name"
+                                                onChange    =   {handleChange}
+                                                value   =   {values.name}
+                                                isInvalid={!!errors.name}
+                                            />
+                                            <Form.Control.Feedback type="invalid" >{errors.name}</Form.Control.Feedback>
+                                        </Col>
+                                    </Form.Group>
 
-                    <Form.Group as={Row} className="mb-3" controlId="EmailID">
-                        <Form.Label column sm={2}>
-                            Email
-                        </Form.Label>
-                        <Col sm={10}>
-                            <Form.Control   
-                                type    =   "email"
-                                placeholder =   "Enter your Email id"
-                                name    =   "email"
-                                value   =   {this.state.email}
-                                onChange    =   {this.handleChange}
-                                required
-                            />
+                                    <Form.Group as={Row} className="mb-3" controlId="EmailID">
+                                        <Form.Label column sm={2}>
+                                            Email
+                                        </Form.Label>
+                                        <Col sm={10}>
+                                            <Form.Control   
+                                                type    =   "email"
+                                                placeholder =   "Enter your Email id"
+                                                name    =   "email"
+                                                value   =   {values.email}
+                                                onChange    =   {handleChange}
+                                                isInvalid   ={!!errors.email}
+                                            />
+                                            <Form.Control.Feedback type="invalid" >{errors.email}</Form.Control.Feedback>
 
-                        </Col>
-                    </Form.Group>
+                                        </Col>
+                                    </Form.Group>
 
-                    <Form.Group as={Row} className="mb-3" controlId="Password">
-                        <Form.Label column sm={2}>
-                            Password
-                        </Form.Label>
-                        <Col sm={10}>
-                            <Form.Control   
-                                type    =   "password"
-                                placeholder =   "Enter your Password"
-                                name    =   "password"
-                                value   =   {this.state.password}
-                                onChange    =   {this.handleChange}
-                                required
-                            />
-                        </Col>
-                    </Form.Group>
+                                    <Form.Group as={Row} className="mb-3" controlId="Password">
+                                        <Form.Label column sm={2}>
+                                            Password
+                                        </Form.Label>
+                                        <Col sm={10}>
+                                            <Form.Control   
+                                                type    =   "password"
+                                                placeholder =   "Enter your Password"
+                                                name    =   "password"
+                                                value   =   {values.password}
+                                                onChange    =   {handleChange}
+                                                isInvalid   ={!!errors.password}
+                                            />
+                                            <Form.Control.Feedback type="invalid" >Password must contain at least 8 characters, one uppercase, one number and one special case character</Form.Control.Feedback>
 
-                    <Form.Group as={Row} className="mb-3" controlId="Password_Confirmation">
-                        <Form.Label column sm={2}>
-                            Confirm Password
-                        </Form.Label>
-                        <Col sm="10">
-                            <Form.Control   
-                                type    =   "password"
-                                placeholder =   "Enter Password"
-                                name    =   "password_confirmation"
-                                value   =   {this.state.password_confirmation}
-                                onChange    =   {this.handleChange}
-                                required
-                            />
-                        </Col>
-                    </Form.Group>
+                                        </Col>
+                                    </Form.Group>
 
-                    {
-                    this.state.loading ?
-                        (<Spinner animation="border" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </Spinner>)   :
-                      (
-                        <Button style={submit_button_style} variant="primary"   type="submit">Submit</Button>
-                      )
-                    }
+                                    <Form.Group as={Row} className="mb-3" controlId="Password_Confirmation">
+                                        <Form.Label column sm={2}>
+                                            Confirm Password
+                                        </Form.Label>
+                                        <Col sm="10">
+                                            <Form.Control   
+                                                type    =   "password"
+                                                placeholder =   "Enter Password"
+                                                name    =   "password_confirmation"
+                                                value   =   {values.password_confirmation}
+                                                onChange    =   {handleChange}
+                                                isInvalid   ={!!errors.password_confirmation}
+                                            />
+                                            <Form.Control.Feedback type="invalid" >{errors.password_confirmation}</Form.Control.Feedback>
 
-                </Form>
+                                        </Col>
+                                    </Form.Group>
+                                    <Button type="submit" style={{marginTop:"2rem"}} disabled={isSubmitting}>Submit form</Button>
+                                </Form>
+                            }
+                        </>
+                    )}
+                </Formik>
                 <div style={{display:'flex',justifyContent:'space-between',flexDirection:'row'}}>
-                    <a href="/login" >Login here</a>
+                    <Nav.Link href="/login" ><Button>Login Here</Button></Nav.Link>
+                    <Nav.Link href ="/resendaccountactivationmail"><Button>Resend Account Activation</Button></Nav.Link>
+
                 </div>
-                <Nav.Link href ="/resendaccountactivationmail">Resend Account Activation</Nav.Link>
-
-
             </div>
     
         )    

@@ -8,3 +8,7 @@
 .status.in-progress{
     color: #90EE90;
 }
+a{
+    text-decoration:none;
+    margin-top: "-1rem";
+}

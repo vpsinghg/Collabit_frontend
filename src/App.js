@@ -46,7 +46,9 @@ class App extends React.Component {
   return (
     <div className="App">
         <NavHeader  />
+      <div style={{paddingTop:"5em"}}>
         <Navigation />
+      </div>
     </div>
   );
   }

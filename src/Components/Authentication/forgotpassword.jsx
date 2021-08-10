@@ -1,18 +1,24 @@
 import React,{Component} from 'react';
 import axios from 'axios';
-import { Row,Form,Col ,Spinner,Button} from 'react-bootstrap';
-
+import { Row,Form,Col ,Button} from 'react-bootstrap';
+// import Formik
+import { Formik } from 'formik';
+import * as Yup from 'yup';
 import { errorMessage } from '../../utils/errResponse';
 import { connect } from 'react-redux';
 import {Redirect}   from 'react-router-dom';
+
+// Yup validation
+const schema = Yup.object().shape({
+    email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+});
+ 
 
 class ForgotPassword extends Component{
     constructor(props){
         super(props);
         this.state={
-            email   : '',
-            validated   :   false,
-            loading :   false,
+            submitsuccessfull    :  false,
             redirect    :   "",
             errResponse :   "",
             successResponse :   ""
@@ -26,115 +32,103 @@ class ForgotPassword extends Component{
         });
     }
 
-    handleSubmit    =   (e) =>  {
-        e.preventDefault();
-        const   form    =   e.currentTarget;
-        if(form.checkValidity()===false){
-            e.preventDefault();
-            e.stopPropagation();
-        }
+    handleformsubmit=(values, {setSubmitting, resetForm}) => {
+        setSubmitting(true);
+        const baseUrl = process.env.REACT_APP_Server_baseUrl;
+        const targeturl =   baseUrl +'/api/auth/forget_password/';
+        axios
+            .post(targeturl,values)
+            .then((res)=>{
+                console.log(res);
+                this.setState({
+                    errResponse    :   "",
+                    successResponse    :   res.data['message'],
+                });
 
-        this.setState({
-            validated   :   true,
-        });
-        if(form.checkValidity() === true){
-            this.setState({ loading :  true},  ()  =>{
-                const baseUrl = process.env.REACT_APP_Server_baseUrl;
-                const targeturl =   baseUrl +'/api/auth/forget_password/';
-                const user = {
-                    email: this.state.email,
-                };
-              
-                axios
-                    .post(targeturl,user)
-                    .then((res)=>{
-                        this.setState({
-                            loading :   false,
-                        });
-                        console.log(res);
-                        this.setState({
-                            errResponse    :   "",
-                            successResponse    :   res.data['message'],
-                            email   :'',
-                        });
-    
+                setTimeout(() => {
+                    resetForm();
+                    setSubmitting(false);
+                }, 100);
+                this.setState({
+                    submitsuccessfull   :   true
+                });
+
+            })
+            .catch((err)=>{
+                setSubmitting(false);
+                if(err.response.status  === 422){
+                    this.setState({
+                        errResponse :   errorMessage(err.response.data),
+                        successResponse :   ""
                     })
-                    .catch((err)=>{
-                        this.setState({
-                            loading :   false,
-                        });
-                        if(err.response.status  === 422){
-                            this.setState({
-                                errResponse :   errorMessage(err.response.data)
-                            })
-                        }
-                        else{
-                            this.setState({
-                                errResponse :   err.response.data.message
-                            })
-                        }
-                    });
-            });    
-        }
+                }
+                else{
+                    this.setState({
+                        errResponse :   err.response.data.message,
+                        successResponse :   ""
+                    })
+                }
+
+            });
+    
     }
 
 
     render(){
-        const conatiner_style={
-            maxWidth:"60%",
-            backgroundColor:"white",
-            borderRadius    :   "10px",
-            boxShadow   :   "0px 0px 10px -2px rgba(0,0,0,0.55)",
-            padding :   "30px",
-            marginTop :"2rem"
-        };
-        const submit_button_style ={
-            marginTop : "20px"
-        };
         return(
             this.props.isLoggedIn 
             ? <Redirect to="/profile"/>
             :
             <div
-                className="container"
-                style={conatiner_style}
+                className="container authcontainer"
             >
                 <h2 style={{textAlign:'center'}}>Request Password change Mail</h2>
                 <div style={{color:"red"}} className="err_response">{this.state.errResponse}</div>
                 <div style={{color:"green"}} className="successResponse">{this.state.successResponse}</div>
                 <br/>
-                <Form
-                    noValidate
-                    validated   =   {this.state.validated} 
-                    onSubmit    =   {this.handleSubmit}
+                <Formik
+                    validationSchema={schema}
+                    onSubmit={this.handleformsubmit}
+                    initialValues={{
+                        email   : '',
+                    }}
                 >
-                    <Form.Group as={Row} className="mb-3" controlId="ForgotPasswordEmailID">
-                        <Form.Label column sm={2}>
-                            Email
-                        </Form.Label>
-                        <Col sm={10}>
-                            <Form.Control   
-                                type    =   "email"
-                                placeholder =   "Enter your Email id"
-                                name    =   "email"
-                                value   =   {this.state.email}
-                                onChange    =   {this.handleChange}
-                                required
-                            />
-
-                        </Col>
-                    </Form.Group>
                     {
-                    this.state.loading ?
-                        (<Spinner animation="border" role="status">
-                        <span className="visually-show">Loading...</span>
-                      </Spinner>)   :
-                      (
-                        <Button style={submit_button_style} variant="primary"   type="submit">Send me Mail for Password Update</Button>
-                      )
+                        (props)=>{
+                            {
+                            return(
+                                <>
+                                {   !this.state.submitsuccessfull &&
+                                    <Form
+                                        noValidate
+                                        onSubmit    =   {props.handleSubmit}
+                                    >
+                                        <Form.Group as={Row} className="mb-3" controlId="ForgotPasswordEmailID">
+                                            <Form.Label column sm={2}>
+                                                Email
+                                            </Form.Label>
+                                            <Col sm={10}>
+                                                <Form.Control   
+                                                    type    =   "email"
+                                                    placeholder =   "Enter your Email id"
+                                                    name    =   "email"
+                                                    value   =   {props.values.email}
+                                                    onChange    =   {props.handleChange}
+                                                    isInvalid   =   {!!props.errors.email}
+                                                />
+                                                <Form.Control.Feedback type="invalid">{props.errors.email}</Form.Control.Feedback>
+                                            </Col>
+                                        </Form.Group>
+                                        <Button  variant="primary"   type="submit" disabled={props.isSubmitting}>Send me Mail for Password Update</Button>
+                                    </Form>
+                                }
+                                </>
+            
+                            )
+                        }
                     }
-
-                </Form>
+                    }
+                </Formik>
             </div>
         )
     }

@@ -4,27 +4,12 @@ import { Row, Col } from "react-bootstrap";
 import AssignedTaskCard from "./AssignedTaskCard";
 import TaskFilter from "./TaskFilter";
 import { getTasks } from "../../../redux/actions/tasks.actions";
-import axios from "axios";
+import {  logout  } from "../../../redux/actions/auth.actions";
 class AssignedTasks extends Component {
   componentDidMount(){
-    axios.get("http://localhost:8000/api/tasks/created", {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-    .then((res) => {
-      console.log(res);
-      this.props.getTasks({ tasks: res.data.tasks, case: "ASSIGNED" });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
   }
 
   render() {
-    console.log(this.props.taskscreated);
     const tasks = this.props.taskscreated;
     let todo = [...tasks.filter((task) => task.status === "assigned")];
     let inProgress = [...tasks.filter((task) => task.status === "in-progress")];
@@ -68,4 +53,4 @@ const mapStatetoProps = (state) => {
   }
 };
 
-export default connect(mapStatetoProps,{getTasks})(AssignedTasks);
+export default connect(mapStatetoProps,{getTasks,logout})(AssignedTasks);

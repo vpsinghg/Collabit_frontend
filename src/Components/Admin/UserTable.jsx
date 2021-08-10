@@ -1,11 +1,16 @@
 import { useState,useEffect } from 'react';
 import Table from 'react-bootstrap/Table';
+import Pagination from "react-js-pagination";
 import axios from 'axios';
 import { connect } from 'react-redux';
-import { Row,Col ,Form} from 'react-bootstrap';
+import { Row,Col ,Form,Button} from 'react-bootstrap';
 import { errorMessage } from '../../utils/errResponse';
+import { logout } from '../../redux/actions/auth.actions';
 export const UserTable = (props)=>{
-    const [users, setUsers] = useState([]);
+
+    const [state, setData] = useState({
+        users: ''
+    });
     const [namefilter, Setnamefilter] =   useState('');
     const [emailfilter, Setemailfilter] =   useState('');
     const [rolefilter, Setrolefilter] =   useState('all');
@@ -16,30 +21,42 @@ export const UserTable = (props)=>{
     const [datafectch,Setdatafetch] =useState(false);
     const [createdByoptions,Setcreatedbyoptions] =useState([]);
 
-    useEffect(()=>{
+    const fetchData =async (pageNumber = 1)=>{
         const baseUrl = process.env.REACT_APP_Server_baseUrl;
         const targeturl =   baseUrl +'/api/admin/users/filter/';
         const data  =   {
+            page    :   pageNumber,
             name    :   namefilter,
             email   :   emailfilter,
             role    :   rolefilter,
             createdBy   :createdByfilter,
             verified : verifiedfilter
         }
-        console.log(data);
         const config    ={
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             params :data
         };
         axios
             .get(targeturl,config)
-            .then((Response)=>{
-                setUsers(Response.data.users);
+            .then((response)=>{
+                setData({
+                    users: response.data
+                });
+        
             })
             .catch((err)=>{
+                if(err.response.status  ===400){
+                    const {logout}  =   props;
+                    logout();
+                    window.location.assign("/");
+                }
                 console.log(err);
             })
         
+
+    }
+    useEffect(()=>{
+        fetchData();
         }, [datafectch] // eslint-disable-line react-hooks/exhaustive-deps
     );
 
@@ -52,11 +69,14 @@ export const UserTable = (props)=>{
         axios
         .get(targeturl,config)
         .then((Response)=>{
-            console.log(Response.data.admins);
             Setcreatedbyoptions(Response.data.admins);
         })
         .catch((err)=>{
             console.log(err);
+            if(err.response.status  ===400){
+                const {logout}  =   this.props;
+                logout();
+            }
         })
      }, []);
      
@@ -107,16 +127,25 @@ export const UserTable = (props)=>{
         axios
         .delete(targeturl,config)
         .then((res)=>{
+            SeterrResponse('');
             SetsuccessResponse(res.data['message']);
             Setdatafetch(!datafectch);
         })
         .catch((err)=>{
             console.log(err);
-            if(err.response.status  === 422){
-                SeterrResponse(errorMessage(err.response.data))
+            if(err.response.status  ===400){
+                const {logout}  =   props;
+                logout();
+            }
+            else if(err.response.status  === 422){
+                SeterrResponse(errorMessage(err.response.data));
+                SetsuccessResponse('');
+
             }
             else{
                 SeterrResponse(err.response.data['message']);
+                SetsuccessResponse('');
+
             }
 
         })
@@ -229,16 +258,39 @@ export const UserTable = (props)=>{
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map((item, i) => (
-                            <tr key={i}>
-                                <td><a href={'/profile/users/user/' + item.id}>{item.name}</a></td>
-                                <td>{item.email}</td>
-                                <td>{item.role}</td>
-                                <td onClick={deleteUser.bind(this,item.id)}>delete</td>
-                            </tr>
-                        ))}
+                        {
+                            state?.users?.data  && state.users.data.length >0 ? 
+                            state?.users?.data?.map((user) => (
+                                    <tr key={user?.id}>
+                                        <td> <a href={'/profile/users/user/'+user?.id}>{user?.name}</a></td>
+                                        <td>{user?.email}</td>
+                                        <td>{user?.role}</td>
+                                        <td  onClick={deleteUser.bind(this,user.id)} style={{textAlign:'center'}}>
+                                            {
+                                                user.role ==="normal" &&
+                                                <Button  variant="danger">Delete</Button>
+                                            }
+                                        </td>
+
+                                    </tr>
+                            )) :null
+                        }
                     </tbody>
                 </Table>
+
+                <Pagination
+                    activePage={state?.users?.current_page ? state?.users?.current_page : 0}
+                    itemsCountPerPage={state?.users?.per_page ? state?.users?.per_page : 0 }
+                    totalItemsCount={state?.users?.total ? state?.users?.total : 0}
+                    onChange={(pageNumber) => {
+                        fetchData(pageNumber)
+                    }}
+                    pageRangeDisplayed={8}
+                    itemClass="page-item"
+                    linkClass="page-link"
+                    firstPageText="First Page"
+                    lastPageText="Last Lage"
+                />
             </div>
         </div>
     )
@@ -249,5 +301,11 @@ const mapStateToProps=(state)=>{
         loggedInUser: state.auth.loggedInUser
     }
 }
+const mapDispatchToProps = dispatch => ({
+    logout: () => {
+      dispatch(logout());
+    },
+});
 
-export default connect(mapStateToProps)(UserTable);
+
+export default connect(mapStateToProps,mapDispatchToProps)(UserTable);

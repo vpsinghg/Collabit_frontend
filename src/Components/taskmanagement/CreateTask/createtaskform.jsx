@@ -3,12 +3,12 @@ import * as Yup from 'yup';
 import { Row,Col,Form,Button} from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { Component } from 'react';
-
+import { logout } from '../../../redux/actions/auth.actions';
 import axios from 'axios';
 
 const schema = Yup.object().shape({
   title: Yup.string()
-    .max(15, 'Must be 15 characters or less')
+    .max(255, 'Must be 255 characters or less')
     .required('Required'),
   description: Yup.string().required(),
   assignee: Yup.string().required(),
@@ -29,16 +29,19 @@ export class CreateTaskForm extends Component{
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     };
     axios
-        .get(targeturl,config)
-        .then((Response)=>{
-            this.setState({
-              assigneeoptions : Response.data.data
-            });
-            console.log(this.state.assigneeoptions);
-        })
-        .catch((err)=>{
-            console.log(err);
-        })
+      .get(targeturl,config)
+      .then((Response)=>{
+          this.setState({
+            assigneeoptions : Response.data.data
+          });
+      })
+      .catch((err)=>{
+          console.log(err);
+          if(err.response.status  === 400){
+            const {logout}  = this.props;
+            logout();
+          }
+      })
   }
   render(){
     const {handleSubmit} =this.props;
@@ -68,6 +71,7 @@ export class CreateTaskForm extends Component{
                 <Form.Control
                   type="text"
                   name="title"
+                  placeholder ="Task Title "
                   value={values.title}
                   onChange={handleChange}
                   isInvalid={!!errors.title}
@@ -144,6 +148,11 @@ const mapStateToProps = (state) => {
   }
 }
 
+const mapDispatchToProps = dispatch => ({
+  logout: () => {
+    dispatch(logout());
+  },
+});
 
 
-export default connect(mapStateToProps)(CreateTaskForm);
+export default connect(mapStateToProps,mapDispatchToProps)(CreateTaskForm);

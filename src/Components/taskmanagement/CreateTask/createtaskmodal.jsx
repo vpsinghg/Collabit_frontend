@@ -4,6 +4,8 @@ import CreateTaskForm from "../CreateTask/createtaskform";
 
 import axios from 'axios';
 import { connect } from 'react-redux';
+import { logout } from '../../../redux/actions/auth.actions';
+
 export class CreateTaskModalComponent extends Component{
     state ={
         modalShow   :   false,
@@ -15,9 +17,7 @@ export class CreateTaskModalComponent extends Component{
             modalShow:!this.state.modalShow
         })
     }
-    handleformsubmit=(values, {setSubmitting, resetForm},props) => {
-        console.log(values);
-        console.log(props);
+    handleformsubmit=(values, {setSubmitting, resetForm}) => {
         setSubmitting(true);
         setTimeout(() => {
           resetForm();
@@ -42,11 +42,8 @@ export class CreateTaskModalComponent extends Component{
                 console.log(res);
                 this.setState({
                     errResponse    :   "",
-                    successResponse    :   res.data['message']  
+                    successResponse    :   res.data['message'],
                 });
-                // this.setState({
-                //     modalShow:!this.state.modalShow
-                // });
             })
             .catch((err)=>{
                 console.log(err.response.status);
@@ -54,6 +51,8 @@ export class CreateTaskModalComponent extends Component{
                     this.setState({
                         errResponse :"Please logout and login again because your session token is expired",
                     });
+                    const {logout}  =   this.props;
+                    logout();
                 }
 
                 if(err.response.status  === 401){
@@ -114,5 +113,11 @@ const mapStateToProps = (state) => {
     }
 }
 
+const mapDispatchToProps = dispatch => ({
+    logout: () => {
+      dispatch(logout());
+    },
+});
 
-export default connect(mapStateToProps)(CreateTaskModalComponent);
+
+export default connect(mapStateToProps,mapDispatchToProps)(CreateTaskModalComponent);

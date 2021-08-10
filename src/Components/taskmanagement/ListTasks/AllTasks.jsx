@@ -3,25 +3,11 @@ import { connect } from "react-redux";
 import {Row, Col } from "react-bootstrap";
 import AllTaskCard from "./AllTasksCard";
 import TaskFilter from "./TaskFilter";
-import axios from "axios";
 import { getTasks } from "../../../redux/actions/tasks.actions";
+import {  logout  } from "../../../redux/actions/auth.actions";
+
 class AllTasks extends Component {
   componentDidMount(){
-    axios
-      .get("http://localhost:8000/api/tasks/all", {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      .then((res) => {
-        console.log(res);
-        this.props.getTasks({ tasks: res.data.tasks, case: "ALL" });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   }
 
   render() {
@@ -69,4 +55,4 @@ const mapStatetoProps = (state) => {
   };
 };
 
-export default connect(mapStatetoProps,{getTasks})(AllTasks);
+export default connect(mapStatetoProps,{getTasks,logout})(AllTasks);

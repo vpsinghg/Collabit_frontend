@@ -2,12 +2,6 @@ import React,{Component} from "react";
 import { Chart } from "react-google-charts";
 import "../MyPerformance/myperformance.css";
 
-const taskStatus ={
-    "todo"  :   "Todo",
-    "inProgress": "In Progress",
-    "completed" :   "Completed",
-    "overdue"   :   "OverDue"
-}
 
 export class MyPerformanceComponent extends Component{
     constructor(props){
@@ -16,23 +10,54 @@ export class MyPerformanceComponent extends Component{
         }
     }
     render(){
-        const {data}    =   this.props;
+        const data    =   this.props;
+        const performancedata =data.data;
+        const task_count    =   data.task_count;
         let initialdata=[
             ["Task Status" ,"Task Count"]
         ]
-        for(const key of Object.keys(data)){
-            initialdata.push([taskStatus[key],data[key]])
+        if(task_count >0){
+            for(const key of Object.keys(performancedata)){
+                initialdata.push([key,performancedata[key]])
+            }    
         }
         return(
             <>
                 <Chart
-                    // width={'500px'}
-                    height={'12em'}
+                    height={'15.5em'}
                     chartType="PieChart"
                     loader={<div>Loading Chart</div>}
                     data={initialdata}
                     options={{
-                        title: 'My Daily Activities',
+                        title: 'Tasks Status',
+                        slices: [
+                            {
+                                color: "#2BB673"
+                            },
+                            {
+                                color: "#e9a227"
+                            },
+                            {
+                                color: "#d91e48"
+                            },
+                            {
+                                color: "#007fad"
+                            },
+                            {
+                                color: '#696969'
+                            }
+                        ],
+                        legend: {
+                            position: "right",
+                            alignment: "center",
+                            textStyle: {
+                              fontSize: 10
+                            }
+                        },   
+                        tooltip: {
+                            showColorCode: true
+                        },
+                                           
                     }}
                     rootProps={{ 'data-testid': '1' }}
                 />

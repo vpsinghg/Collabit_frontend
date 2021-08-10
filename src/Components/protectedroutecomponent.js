@@ -3,6 +3,9 @@ import { connect } from 'react-redux';
 import {Redirect} from 'react-router-dom';
 import axios from 'axios';
 import SideBar from './Admin/sidebar';
+import ToastNotification from './ToastNotification';
+import {logout} from '../../src/redux/actions/auth.actions';
+// import Toast Notification Component
 class ProtectedRouteComponent extends Component{
     constructor(props){
         super(props);
@@ -10,7 +13,7 @@ class ProtectedRouteComponent extends Component{
             accessAllowed : true,
         }
     }
-    componentDidMount(){
+    componentDidMount(){    
         const {isLoggedIn,loggedInUser} =this.props;
         if(!isLoggedIn){
             this.setState({
@@ -31,10 +34,8 @@ class ProtectedRouteComponent extends Component{
             .catch((err)=>{
                 console.log(err);
                 if(err.response.status ===400){
-                    localStorage.clear();
-                    this.setState({
-                        accessAllowed   :   false,
-                    })
+                    const {logout}  =   this.props;
+                    logout();
                 }
             });
         
@@ -50,8 +51,9 @@ class ProtectedRouteComponent extends Component{
             this.props.isLoggedIn 
             ? 
             <>
+                <ToastNotification/>
                 <SideBar  isOpen={this.props.isOpen}/>
-                <Component data ={this.props.computedMatch} />
+                <Component data ={this.props.computedMatch}  />
             </>
             :(<Redirect to={{pathname:"/"}} />)
         );
@@ -66,4 +68,10 @@ const mapStateToProps = (state) => {
     }
 }
 
-export default connect(mapStateToProps)(ProtectedRouteComponent);
+const mapDispatchToProps = dispatch => ({
+    logout: () => {
+      dispatch(logout());
+    },
+});
+
+export default connect(mapStateToProps,mapDispatchToProps)(ProtectedRouteComponent);

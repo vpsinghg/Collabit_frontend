@@ -1,11 +1,14 @@
 import React, { Component } from "react";
 import { getTasks } from "../../../redux/actions/tasks.actions";
-import { Form, Row, Col ,Container} from "react-bootstrap";
+import { Form, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import { connect } from "react-redux";
-
+import { logout } from "../../../redux/actions/auth.actions";
+//Pagination 
+import Pagination from 'react-js-pagination';
 class TaskFilter extends Component {
   state = {
+    tasks : [],
     keyword: "",
     assignee: "all",
     assignor: "all",
@@ -14,8 +17,11 @@ class TaskFilter extends Component {
     assigneeoptions:  [],
     assignoroptions : [],
   };
+
   onChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
+    this.setState({ [e.target.name]: e.target.value },function(){
+      this.fetchData();
+    });
   };
   componentDidMount(){
     if(this.props.type==="todo"){
@@ -36,52 +42,65 @@ class TaskFilter extends Component {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     };
     axios
-        .get(targeturl,config)
-        .then((Response)=>{
-            this.setState({
-              assigneeoptions : Response.data.data,
-              assignoroptions : Response.data.data
-            });
-        })
-        .catch((err)=>{
-            console.log(err);
-        })
+      .get(targeturl,config)
+      .then((Response)=>{
+          this.setState({
+            assigneeoptions : Response.data.data,
+            assignoroptions : Response.data.data
+          });
+      })
+      .catch((err)=>{
+        console.log(err);
+        if(err.response.status===400){
+          this.props.logout();
+        }
+      })
+
+    this.fetchData();
   }
-  componentDidUpdate() {
+  fetchData = (pageNumber =1)=>{
     let data = {
+      page  : pageNumber,
       keyword: this.state.keyword === "" ? undefined : this.state.keyword,
       assignee: this.state.assignee === "" ? undefined : this.state.assignee,
       assignor: this.state.assignor === "" ? undefined : this.state.assignor,
       startTime: this.state.startTime === "" ? undefined : this.state.startTime,
       endTime: this.state.endTime === "" ? undefined : this.state.endTime,
     };
-    console.log(data);
     axios
-      .post(
+      .get(
         `http://localhost:8000/api/tasks/filter/${this.props.type}/${this.props.loggedInUser.id}`,
-        data,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
+          params  : data       
+
         }
       )
       .then((res) => {
-        console.log(res);
+        console.log(res.data);
+        this.setState({
+          tasks : res.data,
+        })
         if (this.props.type === "all"){
-          this.props.getTasks({ tasks: res.data.tasks, case: "ALL" });
+          this.props.getTasks({ tasks: res.data.data, case: "ALL" });
         }
         else  if (this.props.type === "assigned"){
-          this.props.getTasks({ tasks: res.data.tasks, case: "ASSIGNED" });
+          this.props.getTasks({ tasks: res.data.data, case: "ASSIGNED" });
         }
         else  if (this.props.type === "todo"){
-          this.props.getTasks({ tasks: res.data.tasks, case: "TODO" });
+          this.props.getTasks({ tasks: res.data.data, case: "TODO" });
         }
       })
       .catch((err) => {
         console.log(err);
+        if(err.response.status  ===400){
+          this.props.logout();
+        }
       });
   }
+
   render() {
     const tasksfilter_style={
       backgroundColor:"white",
@@ -93,7 +112,7 @@ class TaskFilter extends Component {
     }
   
     return (
-      <Container style={tasksfilter_style}>
+      <div style={tasksfilter_style}>
       <Form>
           <Row className="mb-3">
             <Form.Group as={Col} controlId={this.props.type+"KeywordFilter"}>
@@ -196,7 +215,21 @@ class TaskFilter extends Component {
             </Form.Group>
           </Row>
         </Form>
-        </Container>
+
+        <Pagination
+            activePage={this.state?.tasks?.current_page ? this.state?.tasks?.current_page : 0}
+            itemsCountPerPage={this.state?.tasks?.per_page ? this.state?.tasks?.per_page : 0 }
+            totalItemsCount={this.state?.tasks?.total ? this.state?.tasks?.total : 0}
+            onChange={(pageNumber) => {
+                this.fetchData(pageNumber)
+            }}
+            pageRangeDisplayed={8}
+            itemClass="page-item"
+            linkClass="page-link"
+            firstPageText="First Page"
+            lastPageText="Last Lage"
+        />
+      </div>
     );
   }
 }
@@ -207,4 +240,4 @@ const mapStatetoProps = (state) => {
   };
 };
 
-export default connect(mapStatetoProps, { getTasks })(TaskFilter);
+export default connect(mapStatetoProps, { getTasks,logout })(TaskFilter);

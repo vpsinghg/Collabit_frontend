@@ -5,11 +5,11 @@ import { Tab, Tabs } from "react-bootstrap";
 import AssignedTasks from "./AssignedTasks";
 import AllTasks from "./AllTasks";
 import MyTasks from "./MyTasks.jsx";
-
 class Tasks extends Component {
   state = {};
 
   componentDidMount() {
+
   }  
   render() {
     return (

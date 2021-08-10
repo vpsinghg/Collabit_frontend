@@ -4,24 +4,9 @@ import {  Row, Col } from "react-bootstrap";
 import MyTaskCard from "./MyTaskCard";
 import TaskFilter from "./TaskFilter";
 import { getTasks } from "../../../redux/actions/tasks.actions";
-
-import axios from "axios";
+import { logout } from "../../../redux/actions/auth.actions";
 class MyTasks extends Component {
   componentDidMount(){
-    axios.get("http://localhost:8000/api/tasks/todotasks", {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-    .then((res) => {
-      console.log(res);
-      this.props.getTasks({ tasks: res.data.tasks, case: "TODO" });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
   }
   render() {
     console.log(this.props.mytodotasks);
@@ -68,4 +53,4 @@ const mapStatetoProps = (state) => {
   }
 };
 
-export default connect(mapStatetoProps,{getTasks})(MyTasks);
+export default connect(mapStatetoProps,{getTasks,logout})(MyTasks);
